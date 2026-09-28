@@ -12,6 +12,7 @@ yarn.lock
 .env
 .env.local
 .env.*.local
+.env before 05-06-24
 
 # IDE
 .vscode/
@@ -170,3 +171,5 @@ personalities/*
 !personalities/.gitkeep
 
 .env.old
+
+.backup

@@ -1,141 +1,231 @@
 # Fabrexa AI
 
-A sophisticated Telegram bot powered by local Ollama models with advanced memory management, personality system, and streaming responses.
+<img src="./public/images/project-logo.jpg" alt="Fabrexa AI logo" width="160" />
 
-## Features
+Fabrexa is a self-hosted Telegram bot for chatting with an LLM running through Ollama on your own computer.
 
-- **Local AI Models**: Fully self-hosted using Ollama - no cloud dependencies or API costs
-- **Personality System**: Multiple configurable AI personalities with persistent system prompts
-- **Smart Memory Management**: Intelligent conversation history with summarization and analysis
-- **Real-time Streaming**: Live message updates as AI generates responses
-- **Access Control**: Private mode (owner-only) or public deployment
-- **Customizable Parameters**: Fine-tune model behavior (temperature, context window, token limits)
-- **Automated Memory Optimization**: Scheduled background processing for memory efficiency
+It gives a local model a familiar chat interface, streams replies as they are generated, supports custom personalities, and can keep short-term and long-term memory for the personalities you choose.
 
-## Quick Start
+[![Node.js 22+](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Ollama](https://img.shields.io/badge/Ollama-local_models-111111)](https://ollama.com/)
+[![Telegram](https://img.shields.io/badge/Telegram-bot-26A5E4?logo=telegram&logoColor=white)](https://telegram.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-6f42c1.svg)](./LICENSE)
 
-### Prerequisites
+## What it does
 
-- **Node.js** 18.0.0 or higher
-- **Ollama** installed and running locally
-- A Telegram bot token from [BotFather](https://t.me/botfather)
+- Connects Telegram to a local Ollama model
+- Streams the generated response into the Telegram chat
+- Keeps recent messages in the active conversation
+- Supports plain-text personality prompts
+- Provides optional short-term and long-term memory
+- Lets the user view, edit, or remove saved long-term memories
+- Runs in private owner-only mode by default
 
-### Installation
+Telegram still carries messages between you and the bot. Model inference and Fabrexa's conversation files stay on the machine running the project.
 
-1. **Clone the repository**
+## Screenshots
 
-    ```bash
-    git clone https://github.com/yourusername/Fabrexa-AI-Public.git
-    cd Fabrexa-AI-Public
-    ```
+<table>
+    <tr>
+        <td width="50%"><img src="./public/images/chating-w-bot.jpg" alt="Chatting with a local model through Fabrexa in Telegram" /></td>
+        <td width="50%"><img src="./public/images/change-personality.jpg" alt="Changing the active personality in Fabrexa" /></td>
+    </tr>
+    <tr>
+        <td align="center">Chat with the selected local model</td>
+        <td align="center">Switch personalities from Telegram</td>
+    </tr>
+</table>
 
-2. **Install dependencies**
+## How it works
 
-    ```bash
-    npm install
-    ```
-
-3. **Verify setup**
-
-    ```bash
-    npm run check
-    ```
-
-4. **Configure environment**
-
-    ```bash
-    cp .env.example .env
-    nano .env  # or your preferred editor
-    ```
-
-5. **Start the bot**
-    ```bash
-    npm start
-    ```
-
-## Configuration
-
-See [.env.example](./.env.example) for all available options. Key settings:
-
-- `TELEGRAM_BOT_TOKEN`: Your Telegram bot token
-- `OWNER_ID`: Your Telegram user ID (required for private mode)
-- `OLLAMA_MODEL`: Model name (default: gemma3:12b)
-- `BOT_PRIVATE`: true for owner-only, false for public
-
-## Project Structure
-
+```text
+Telegram
+   ↓
+Fabrexa
+   ├── selected personality
+   ├── recent conversation
+   └── allowed long-term memory
+   ↓
+Ollama on your computer
+   ↓
+Streamed reply in Telegram
 ```
+
+Fabrexa sends the active personality prompt, up to eight recent conversation messages, optional long-term memory, and the new message to Ollama. The response is then streamed back to Telegram.
+
+## Requirements
+
+- [Node.js 22+](https://nodejs.org/)
+- [Ollama](https://ollama.com/)
+- A bot token created with [@BotFather](https://t.me/botfather)
+- Your numeric Telegram user ID when private mode is enabled
+
+## Installation
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/Ali-Sdg90/Fabrexa-AI-Ollama.git
+cd Fabrexa-AI-Ollama
+npm install
+```
+
+### 2. Download a model
+
+The example configuration uses `gemma3:12b`:
+
+```bash
+ollama pull gemma3:12b
+```
+
+You can also run a compatible GGUF model from Hugging Face:
+
+```bash
+ollama run hf.co/<publisher>/<model>-GGUF:Q4_K_M
+```
+
+Use the exact model reference from the model page as `OLLAMA_MODEL`. See the [official Hugging Face Ollama guide](https://huggingface.co/docs/hub/ollama) for details.
+
+### 3. Configure Fabrexa
+
+Copy `.env.example` to `.env`:
+
+```bash
+cp .env.example .env
+```
+
+On Windows Command Prompt:
+
+```bat
+copy .env.example .env
+```
+
+Set the required values in `.env`:
+
+```env
+TELEGRAM_BOT_TOKEN=your_token_from_botfather
+OWNER_ID=your_numeric_telegram_id
+BOT_PRIVATE=true
+OLLAMA_MODEL=gemma3:12b
+```
+
+Never commit `.env` or share your Telegram bot token.
+
+### 4. Add a personality
+
+Create `personalities/friendly.txt`:
+
+```text
+Name: Friendly
+Prompt:
+You are a helpful and friendly assistant. Respond clearly and naturally.
+```
+
+Every `.txt` file in `personalities/` becomes an option in the Telegram personality picker.
+
+### 5. Check and run
+
+Make sure Ollama is running, then use:
+
+```bash
+npm run check
+npm start
+```
+
+Open the bot in Telegram, send `/start`, and type a message.
+
+## Using the bot
+
+Fabrexa responds to normal text messages and provides three quick actions:
+
+| Action | Purpose |
+| --- | --- |
+| **New Chat** | Starts a new conversation without deleting long-term memory |
+| **Change Personality** | Selects another prompt and starts a new conversation |
+| **Show Memory** | Shows editable long-term memories for the active personality |
+
+## Memory
+
+Conversation history and the optional memory system are separate:
+
+- The active conversation supplies recent messages to the model.
+- Short-term memory stores useful facts identified from user messages.
+- The scheduled processor promotes stable and important facts to long-term memory.
+- Long-term memory is added to future prompts and remains available across new chats.
+
+Memory is disabled until you list allowed personality keys or names in `.env`:
+
+```env
+MEMORY_ENABLED_PERSONALITIES=friendly
+```
+
+Memory files are stored locally in `chat_memory/` and are ignored by Git.
+
+## Common configuration
+
+| Variable | Purpose | Example or default |
+| --- | --- | --- |
+| `TELEGRAM_BOT_TOKEN` | Telegram bot token | Required |
+| `OWNER_ID` | Allowed Telegram user in private mode | Required when private |
+| `BOT_PRIVATE` | Restrict the bot to `OWNER_ID` | `true` |
+| `OLLAMA_BASE_URL` | Ollama server address | `http://127.0.0.1:11434` |
+| `OLLAMA_MODEL` | Model used for chat | `gemma3:12b` in `.env.example` |
+| `OLLAMA_ANALYZER_MODEL` | Optional model used for memory analysis | Main chat model |
+| `OLLAMA_NUM_CTX` | Context window | `8192` |
+| `OLLAMA_MAX_TOKENS` | Maximum generated tokens | `512` |
+| `MEMORY_ENABLED_PERSONALITIES` | Personalities allowed to use memory | Empty |
+| `LOG_MODE` | Enables detailed payload logs when set to `dev-mode` | `normal` |
+
+The complete reference is in [`.env.example`](./.env.example) and [Project Guide](./docs/PROJECT_GUIDE.md).
+
+## Commands
+
+```bash
+npm start               # Start the bot
+npm run dev             # Start using Node's .env loader
+npm run check           # Check local setup and Ollama availability
+npm run lint            # Run ESLint
+npm run memory-process  # Process short-term memory manually
+```
+
+`npm run check` confirms that the local requirements, environment values, Ollama server, and selected model are available. It does not contact Telegram to validate the bot token.
+
+## Project structure
+
+```text
 src/
-├── ai/              # Ollama client and configuration
-├── bot/             # Telegram bot handlers and middleware
-├── config/          # Environment and runtime configuration
-├── memory/          # Conversation memory and analysis
-└── personalities/   # Personality definitions and management
+├── ai/              # Ollama request and streaming client
+├── bot/             # Telegram handlers, actions, and access control
+├── config/          # Environment configuration
+├── memory/          # Conversation, short-term, and long-term memory
+└── personalities/   # Personality file loader
 
-chat_memory/        # Persistent user conversations
-personalities/      # Custom personality definitions (.txt files)
+personalities/       # Local personality prompts
+chat_memory/         # Local runtime data, created automatically
+public/              # Static project website
+docs/                # Focused technical and troubleshooting guides
 ```
+
+## Project website
+
+The landing page is plain HTML, CSS, and JavaScript. Preview it locally with:
+
+```bash
+python -m http.server 8000 --directory public
+```
+
+Then open `http://localhost:8000`.
 
 ## Documentation
 
-Complete documentation is available in the [`docs/`](./docs/) folder:
-
-- **[Installation Guide](./docs/INSTALLATION.md)** - Step-by-step setup instructions
-- **[Configuration Guide](./docs/CONFIGURATION.md)** - All environment variables and settings
-- **[Features & Usage](./docs/FEATURES.md)** - Bot capabilities and how to use them
-- **[Development Guide](./docs/DEVELOPMENT.md)** - Development workflow and contributing
-- **[Architecture](./docs/ARCHITECTURE.md)** - System design and technical reference
-- **[Troubleshooting](./docs/TROUBLESHOOTING.md)** - Solutions for common issues
-
-**New to the project?** Start with [Quick Start Guide](./QUICK_START.md) (5 minutes) or [Complete Documentation Index](./docs/DOCUMENTATION.md) for all guides.
-
-## Quick Links
-
-| Purpose             | File                                                 |
-| ------------------- | ---------------------------------------------------- |
-| 🚀 Get running fast | [QUICK_START.md](./QUICK_START.md)                   |
-| 📖 Setup details    | [docs/INSTALLATION.md](./docs/INSTALLATION.md)       |
-| ⚙️ All settings     | [docs/CONFIGURATION.md](./docs/CONFIGURATION.md)     |
-| ✨ Features         | [docs/FEATURES.md](./docs/FEATURES.md)               |
-| 🧠 Architecture     | [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)       |
-| 🐛 Troubleshooting  | [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) |
-| 🤝 Contributing     | [CONTRIBUTING.md](./CONTRIBUTING.md)                 |
-| 📚 All docs         | [docs/](./docs/)                                     |
-
-## Technology Stack
-
-- **Runtime**: Node.js
-- **Telegram**: Telegraf (v4.16.0)
-- **AI**: Ollama (local models)
-- **Task Scheduling**: node-cron
-- **HTTP Client**: axios
-- **Linting**: ESLint
-
-## Available Commands
-
-| Command                  | Purpose                        |
-| ------------------------ | ------------------------------ |
-| `npm start`              | Production mode                |
-| `npm run dev`            | Development mode with env file |
-| `npm run check`          | Verify environment setup       |
-| `npm run lint`           | Code quality check             |
-| `npm run memory-process` | Manual memory processing       |
-
-## Performance Considerations
-
-- Local model execution means slower responses compared to cloud APIs
-- Adjust `REQUEST_TIMEOUT` based on your hardware (default: 120s)
-- Memory processing happens automatically via scheduled tasks
-- Use `OLLAMA_NUM_CTX` to balance context window vs memory usage
-
-## License
-
-MIT - See [LICENSE](./LICENSE) for details
+- [Project guide](./docs/PROJECT_GUIDE.md) for architecture, configuration, and implementation details
+- [Troubleshooting](./docs/TROUBLESHOOTING.md) for common setup and runtime problems
+- [Contributing](./CONTRIBUTING.md) for the development workflow
 
 ## Author
 
-Ali Sadeghi
+Designed and developed by **Ali Sadeghi**.
 
----
+## License
 
-**For detailed setup and configuration, refer to the [Installation Guide](./INSTALLATION.md).**
+Fabrexa AI is available under the [MIT License](./LICENSE).
