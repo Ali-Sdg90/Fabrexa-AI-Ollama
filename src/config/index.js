@@ -70,11 +70,16 @@ export const IS_DEV_LOG_MODE = new Set([
 // Chat memory configuration
 export const CHAT_MEMORY_DIR = "chat_memory";
 export const PERSONALITY_DIR = "personalities";
-export const DEFAULT_PERSONALITY = "friendly";
+export const DEFAULT_PERSONALITY = "Friendly";
+const configuredMemoryPersonalities =
+    process.env.MEMORY_ENABLED_PERSONALITIES;
 export const MEMORY_ENABLED_PERSONALITIES =
-    process.env.MEMORY_ENABLED_PERSONALITIES?.split(",")
-        .map((value) => value.trim())
-        .filter(Boolean) || [];
+    configuredMemoryPersonalities === undefined
+        ? ["Friendly", "Vent Girl"]
+        : configuredMemoryPersonalities
+              .split(",")
+              .map((value) => value.trim())
+              .filter(Boolean);
 
 // Request configuration. Local models can be slower than hosted APIs.
 export const REQUEST_TIMEOUT = readNumber("REQUEST_TIMEOUT", 120000);

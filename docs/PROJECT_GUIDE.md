@@ -53,14 +53,12 @@ Personalities are local `.txt` files inside `personalities/`. The filename witho
 ```text
 Name: Friendly
 Prompt:
-You are a helpful and friendly assistant. Keep answers clear and natural.
+You are Friendly, a warm, thoughtful, and easygoing assistant.
 ```
 
 The `Name` line is shown in Telegram. Everything after `Prompt:` becomes the personality prompt.
 
-Keep at least one personality file in the folder. Using `friendly.txt` is recommended because `friendly` is the default personality key.
-
-Personality prompt files are ignored by Git in this repository. This keeps private prompts out of commits, but it also means each installation must create its own files.
+The tracked `Friendly.txt` file provides the default personality. The repository also includes Elara Voss, Sherlock Holmes, and Vent Girl as demo personalities, so a fresh clone is ready to use. Additional personality prompt files remain ignored by Git to keep private prompts out of commits.
 
 ## Conversation and memory
 
@@ -90,10 +88,10 @@ Long-term memories remain available after starting a new chat. The Telegram memo
 Memory is enabled per personality:
 
 ```env
-MEMORY_ENABLED_PERSONALITIES=friendly,work-assistant
+MEMORY_ENABLED_PERSONALITIES=Friendly,Vent Girl
 ```
 
-The values can match personality keys or displayed names. Leave the variable empty to disable short-term and long-term memory for every personality.
+Friendly and Vent Girl use memory by default. The values can match personality keys or displayed names. Change the list for different personalities, or leave the variable empty to disable short-term and long-term memory for every personality.
 
 ## Environment reference
 
@@ -131,7 +129,7 @@ When `BOT_PRIVATE=false`, any Telegram user who can reach the bot can use it. Ru
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `TELEGRAM_STREAM_EDIT_INTERVAL_MS` | `6000` | Initial delay between Telegram response edits |
-| `MEMORY_ENABLED_PERSONALITIES` | Empty | Comma-separated personality keys or names with memory access |
+| `MEMORY_ENABLED_PERSONALITIES` | `Friendly,Vent Girl` | Comma-separated personality keys or names with memory access |
 | `MEMORY_PROCESSOR_CRON` | `0 0 * * *` | Memory processing schedule |
 | `MEMORY_PROCESSOR_TIMEZONE` | `Asia/Tehran` | IANA timezone used by the schedule |
 | `LOG_MODE` | `normal` | Use `dev-mode`, `debug`, or `verbose` for payload diagnostics |
@@ -158,13 +156,10 @@ Model names and available quantizations differ by repository. Follow the command
 ## Local validation
 
 ```bash
-npm run lint
 npm run check
 ```
 
-`npm run lint` performs static JavaScript checks.
-
-`npm run check` verifies:
+`npm run check` performs static JavaScript checks, runs the focused automated tests, and then verifies:
 
 - `.env` exists
 - Node.js, npm, and the Ollama CLI are available
@@ -173,9 +168,9 @@ npm run check
 - The Ollama server responds
 - The configured model is installed
 
-It does not validate the Telegram token with Telegram and does not send a test message.
+It prints `✅ All checks passed.` only after every step succeeds. Use `npm run check:setup` to run only the environment and Ollama checks. Neither command validates the Telegram token with Telegram or sends a test message.
 
-There is currently no automated test suite. Changes to Telegram interactions, streaming, personalities, and memory should also be checked manually with a test bot and local model.
+Changes to Telegram interactions, streaming, personalities, and memory should also be checked manually with a test bot and local model.
 
 ## Static project website
 
@@ -189,7 +184,7 @@ The site uses plain HTML, CSS, and JavaScript. It does not require a frontend bu
 
 ## Security and privacy
 
-- Keep `.env`, bot tokens, personality prompts, and `chat_memory/` out of Git.
+- Keep `.env`, bot tokens, private personality prompts, and `chat_memory/` out of Git.
 - Keep private mode enabled unless public access is intentional.
 - Treat detailed development logs as sensitive because they can contain conversation context.
 - Telegram transports the messages, even though model inference runs through the configured Ollama server.

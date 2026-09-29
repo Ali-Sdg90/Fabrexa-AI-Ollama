@@ -7,8 +7,10 @@
     "scripts": {
         "start": "node bot.js",
         "dev": "node --env-file=.env bot.js",
-        "check": "node check-setup.js",
-        "lint": "eslint bot.js \"src/**/*.js\" \"scripts/**/*.js\"",
+        "check": "npm run lint && npm test && npm run check:setup && node -e \"console.log('\\n✅ All checks passed.')\"",
+        "check:setup": "node check-setup.js",
+        "lint": "eslint bot.js \"src/**/*.js\" \"scripts/**/*.js\" \"test/**/*.js\"",
+        "test": "node --test",
         "memory-process": "node scripts/memory-process.js"
     },
     "keywords": [

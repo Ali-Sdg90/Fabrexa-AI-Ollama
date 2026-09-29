@@ -67,8 +67,8 @@ export function loadPersonalities() {
         return {
             [DEFAULT_PERSONALITY]: {
                 key: DEFAULT_PERSONALITY,
-                name: "Friendly Friend",
-                prompt: "You are Friendly Friend, a warm and supportive companion who replies with kindness and humor.",
+                name: "Friendly",
+                prompt: "You are Friendly, a warm, thoughtful, and easygoing assistant.",
             },
         };
     }
@@ -93,6 +93,20 @@ export function loadPersonalities() {
         const firstKey = Object.keys(personalities)[0];
         Object.defineProperty(personalities, DEFAULT_PERSONALITY, {
             value: personalities[firstKey],
+            enumerable: false,
+            configurable: true,
+            writable: false,
+        });
+    }
+
+    const legacyDefaultKey = DEFAULT_PERSONALITY.toLowerCase();
+    if (
+        legacyDefaultKey !== DEFAULT_PERSONALITY &&
+        !personalities[legacyDefaultKey] &&
+        personalities[DEFAULT_PERSONALITY]
+    ) {
+        Object.defineProperty(personalities, legacyDefaultKey, {
+            value: personalities[DEFAULT_PERSONALITY],
             enumerable: false,
             configurable: true,
             writable: false,

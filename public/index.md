@@ -7,7 +7,7 @@ Fabrexa AI Ollama is a self-hosted Telegram bot for chatting with a local LLM th
 - Uses Telegram as the chat interface
 - Runs the configured model through Ollama
 - Streams generated replies into the Telegram conversation
-- Loads custom personalities from local text files
+- Includes four demo personalities and loads custom ones from local text files
 - Keeps recent conversation context
 - Supports optional short-term and long-term memory
 - Provides private owner-only access by default
@@ -30,7 +30,7 @@ npm install
 ollama pull gemma3:12b
 ```
 
-Copy `.env.example` to `.env`, add the Telegram token and owner ID, create at least one personality file, then run:
+Copy `.env.example` to `.env`, add the Telegram token and owner ID, then run. The included `Friendly` personality works without additional setup:
 
 ```bash
 npm run check

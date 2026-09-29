@@ -6,7 +6,7 @@ Thanks for taking the time to improve Fabrexa AI.
 
 1. Read the [README](./README.md) and complete the local setup.
 2. Use a separate Telegram bot for development when possible.
-3. Keep `.env`, bot tokens, personality prompts, logs, and `chat_memory/` out of commits.
+3. Keep `.env`, bot tokens, private personality prompts, logs, and `chat_memory/` out of commits.
 
 ## Development setup
 
@@ -17,7 +17,7 @@ npm install
 cp .env.example .env
 ```
 
-Configure `.env`, add a local personality file, start Ollama, then run:
+Configure `.env`, start Ollama, then run:
 
 ```bash
 npm run check
@@ -36,16 +36,15 @@ See the [Project Guide](./docs/PROJECT_GUIDE.md) for the runtime flow and config
 
 ## Validation
 
-Run the checks that apply to your change:
+Run the complete project check:
 
 ```bash
-npm run lint
 npm run check
 ```
 
-`npm run check` needs a configured local environment and running Ollama server. It does not validate the Telegram token remotely.
+`npm run check` runs lint, tests, and the local setup check. It needs a configured local environment and running Ollama server, but it does not validate the Telegram token remotely.
 
-There is currently no automated test suite. Manually verify affected Telegram flows, streaming behavior, personality selection, and memory behavior with a test bot when relevant.
+The focused test suite covers core personality, memory edit authorization, and conversation parsing behavior. Manually verify affected Telegram flows, streaming behavior, personality selection, and memory behavior with a test bot when relevant.
 
 For static website changes, preview `public/` locally:
 

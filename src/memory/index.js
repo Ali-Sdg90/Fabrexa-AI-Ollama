@@ -141,34 +141,31 @@ export async function loadRecentConversation(chatId, maxLines = 12) {
     }
 
     const raw = await fs.readFile(sessionPath, "utf-8");
+    return parseSessionHistory(raw, maxLines);
+}
+
+export function parseSessionHistory(raw, maxLines = 12) {
     const lines = raw
         .split(/\r?\n/)
         .map((line) => line.trim())
         .filter(Boolean);
     const recent = lines.slice(-maxLines);
+    const parsed = [];
 
-    const parsed = recent.map((line) => {
-        const text = line.replace(/^\[.*?\]\s*/, "");
-        if (text.startsWith("User: ")) {
-            return {
-                role: "user",
-                content: text.replace(/^User: /, ""),
-            };
+    for (const line of recent) {
+        const messageMatch = line.match(/^\[[^\]]+\]\s+([^:]+):\s?(.*)$/);
+        if (messageMatch) {
+            parsed.push({
+                role: messageMatch[1] === "User" ? "user" : "assistant",
+                content: messageMatch[2],
+            });
+            continue;
         }
 
-        const colonIndex = text.indexOf(":");
-        if (colonIndex > 0) {
-            return {
-                role: "assistant",
-                content: text.slice(colonIndex + 2),
-            };
+        if (parsed.length > 0) {
+            parsed[parsed.length - 1].content += `\n${line}`;
         }
-
-        return {
-            role: "assistant",
-            content: text,
-        };
-    });
+    }
 
     return normalizeConversation(parsed);
 }

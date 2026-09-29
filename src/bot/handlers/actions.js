@@ -21,6 +21,10 @@ import { getMemoryAccessLabel, hasMemoryAccess } from "../../memory/access.js";
 
 const pendingMemoryEdit = new Map();
 
+function getPendingMemoryEditKey(chatId, userId) {
+    return `${chatId}:${userId}`;
+}
+
 async function getCurrentPersonality(chatId) {
     const chatState = await getChatState(chatId);
     return (
@@ -153,21 +157,24 @@ ${formatMemoryList(memoryEntries)}`;
 
         const memoryId = ctx.match[1];
         await ctx.answerCbQuery();
-        pendingMemoryEdit.set(ctx.chat.id, memoryId);
+        setPendingMemoryEdit(ctx.chat.id, ctx.from.id, memoryId);
         await ctx.reply(
             "✍️ Send the new long-term memory text for this entry, or type cancel.",
         );
     });
 }
 
-export function getPendingMemoryEdit(chatId) {
-    return pendingMemoryEdit.get(chatId);
+export function getPendingMemoryEdit(chatId, userId) {
+    return pendingMemoryEdit.get(getPendingMemoryEditKey(chatId, userId));
 }
 
-export function deletePendingMemoryEdit(chatId) {
-    pendingMemoryEdit.delete(chatId);
+export function deletePendingMemoryEdit(chatId, userId) {
+    pendingMemoryEdit.delete(getPendingMemoryEditKey(chatId, userId));
 }
 
-export function setPendingMemoryEdit(chatId, memoryId) {
-    pendingMemoryEdit.set(chatId, memoryId);
+export function setPendingMemoryEdit(chatId, userId, memoryId) {
+    pendingMemoryEdit.set(
+        getPendingMemoryEditKey(chatId, userId),
+        memoryId,
+    );
 }

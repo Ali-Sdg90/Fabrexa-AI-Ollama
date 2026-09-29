@@ -2,11 +2,11 @@
 
 > Fabrexa AI Ollama is a self-hosted Telegram bot for chatting with an LLM running through Ollama on your own computer.
 
-The project uses Telegram as the chat interface and Ollama for model inference. It supports streamed replies, custom personality prompts, recent conversation context, and optional short-term and long-term memory. Telegram transports messages, while model inference and Fabrexa runtime files remain on the configured host machine.
+The project uses Telegram as the chat interface and Ollama for model inference. It includes four demo personalities, supports custom personality prompts, streams replies, keeps recent conversation context, and offers optional short-term and long-term memory. Telegram transports messages, while model inference and Fabrexa runtime files remain on the configured host machine.
 
 ## Project overview
 
-- [Homepage](https://ali-sdg90.github.io/Fabrexa-AI-Ollama/index.md): Concise product overview, features, requirements, and installation path.
+- [Homepage](https://ali-sdg.is-a.dev/Fabrexa-AI-Ollama/index.md): Concise product overview, features, requirements, and installation path.
 - [README](https://raw.githubusercontent.com/Ali-Sdg90/Fabrexa-AI-Ollama/main/README.md): Main setup and usage documentation.
 - [Project guide](https://raw.githubusercontent.com/Ali-Sdg90/Fabrexa-AI-Ollama/main/docs/PROJECT_GUIDE.md): Architecture, configuration, personalities, memory, and validation details.
 - [Troubleshooting](https://raw.githubusercontent.com/Ali-Sdg90/Fabrexa-AI-Ollama/main/docs/TROUBLESHOOTING.md): Common installation and runtime problems.

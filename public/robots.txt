@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ali-sdg90.github.io/Fabrexa-AI-Ollama/sitemap.xml
+Sitemap: https://ali-sdg.is-a.dev/Fabrexa-AI-Ollama/sitemap.xml

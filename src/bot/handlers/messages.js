@@ -95,7 +95,8 @@ export function registerMessageHandler(bot) {
     bot.on("message", async (ctx, next) => {
         if (!ctx.message?.text) return;
 
-        const editId = getPendingMemoryEdit(ctx.chat.id);
+        const userId = ctx.from?.id;
+        const editId = getPendingMemoryEdit(ctx.chat.id, userId);
         const text = ctx.message.text.trim();
 
         if (!editId) {
@@ -103,8 +104,10 @@ export function registerMessageHandler(bot) {
             return next();
         }
 
+        if (!isOwner(ctx)) return replyNotOwner(ctx);
+
         if (text.toLowerCase() === "cancel" || text.toLowerCase() === "لغو") {
-            deletePendingMemoryEdit(ctx.chat.id);
+            deletePendingMemoryEdit(ctx.chat.id, userId);
             await ctx.reply("✋ Memory edit canceled.");
             return;
         }
@@ -118,7 +121,7 @@ export function registerMessageHandler(bot) {
             PERSONALITIES[chatState.personality] ||
             PERSONALITIES[Object.keys(PERSONALITIES)[0]];
         if (!hasMemoryAccess(personality)) {
-            deletePendingMemoryEdit(ctx.chat.id);
+            deletePendingMemoryEdit(ctx.chat.id, userId);
             await ctx.reply(
                 `🧠 Memory editing is only enabled for ${getMemoryAccessLabel()}. Current personality: ${personality.name}.`,
             );
@@ -126,7 +129,7 @@ export function registerMessageHandler(bot) {
         }
 
         const updated = await updateMemoryEntry(ctx.chat.id, editId, text);
-        deletePendingMemoryEdit(ctx.chat.id);
+        deletePendingMemoryEdit(ctx.chat.id, userId);
 
         if (updated) {
             await ctx.reply("✅ Memory entry updated.");

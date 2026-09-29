@@ -111,19 +111,9 @@ OLLAMA_MODEL=gemma3:12b
 
 Never commit `.env` or share your Telegram bot token.
 
-### 4. Add a personality
+The repository includes four ready-to-use demo personalities: Friendly, Elara Voss, Sherlock Holmes, and Vent Girl. Add more `.txt` files to `personalities/` if you want custom options in the Telegram personality picker.
 
-Create `personalities/friendly.txt`:
-
-```text
-Name: Friendly
-Prompt:
-You are a helpful and friendly assistant. Respond clearly and naturally.
-```
-
-Every `.txt` file in `personalities/` becomes an option in the Telegram personality picker.
-
-### 5. Check and run
+### 4. Check and run
 
 Make sure Ollama is running, then use:
 
@@ -153,11 +143,13 @@ Conversation history and the optional memory system are separate:
 - The scheduled processor promotes stable and important facts to long-term memory.
 - Long-term memory is added to future prompts and remains available across new chats.
 
-Memory is disabled until you list allowed personality keys or names in `.env`:
+Memory is enabled by default for Friendly and Vent Girl:
 
 ```env
-MEMORY_ENABLED_PERSONALITIES=friendly
+MEMORY_ENABLED_PERSONALITIES=Friendly,Vent Girl
 ```
+
+Change the list to use memory with different personalities, or leave it empty to disable memory for all personalities.
 
 Memory files are stored locally in `chat_memory/` and are ignored by Git.
 
@@ -173,7 +165,7 @@ Memory files are stored locally in `chat_memory/` and are ignored by Git.
 | `OLLAMA_ANALYZER_MODEL` | Optional model used for memory analysis | Main chat model |
 | `OLLAMA_NUM_CTX` | Context window | `8192` |
 | `OLLAMA_MAX_TOKENS` | Maximum generated tokens | `512` |
-| `MEMORY_ENABLED_PERSONALITIES` | Personalities allowed to use memory | Empty |
+| `MEMORY_ENABLED_PERSONALITIES` | Personalities allowed to use memory | `Friendly,Vent Girl` |
 | `LOG_MODE` | Enables detailed payload logs when set to `dev-mode` | `normal` |
 
 The complete reference is in [`.env.example`](./.env.example) and [Project Guide](./docs/PROJECT_GUIDE.md).
@@ -183,12 +175,14 @@ The complete reference is in [`.env.example`](./.env.example) and [Project Guide
 ```bash
 npm start               # Start the bot
 npm run dev             # Start using Node's .env loader
-npm run check           # Check local setup and Ollama availability
+npm run check           # Run lint, tests, and the local setup check
+npm run check:setup     # Check environment values, Ollama, and the model
 npm run lint            # Run ESLint
+npm test                # Run the focused automated tests
 npm run memory-process  # Process short-term memory manually
 ```
 
-`npm run check` confirms that the local requirements, environment values, Ollama server, and selected model are available. It does not contact Telegram to validate the bot token.
+`npm run check` runs lint, the focused tests, and `npm run check:setup`. The setup check confirms that the local requirements, environment values, Ollama server, and selected model are available. It does not contact Telegram to validate the bot token. A success message is printed only after every check passes.
 
 ## Project structure
 
@@ -207,6 +201,8 @@ docs/                # Focused technical and troubleshooting guides
 ```
 
 ## Project website
+
+[Visit the live project website](https://ali-sdg.is-a.dev/Fabrexa-AI-Ollama/).
 
 The landing page is plain HTML, CSS, and JavaScript. Preview it locally with:
 

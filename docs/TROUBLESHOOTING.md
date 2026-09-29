@@ -1,12 +1,12 @@
 # Troubleshooting
 
-Start with the built-in setup check:
+Start with the complete project check:
 
 ```bash
 npm run check
 ```
 
-It reports missing local tools, invalid required values, Ollama connection problems, and unavailable models.
+It runs lint and tests before reporting missing local tools, invalid required values, Ollama connection problems, and unavailable models. Use `npm run check:setup` when you only need the environment and Ollama checks.
 
 ## Node.js is too old
 
@@ -101,16 +101,16 @@ Check these items:
 
 1. Ollama is still running.
 2. `OLLAMA_MODEL` matches an installed model.
-3. At least one `.txt` personality exists in `personalities/`.
-4. The personality file has a non-empty prompt.
+3. The tracked `personalities/Friendly.txt` file is present.
+4. Any custom personality file has a non-empty prompt.
 5. The request timeout is long enough for your hardware.
 
-A minimal `personalities/friendly.txt` file looks like this:
+The included `personalities/Friendly.txt` file begins like this:
 
 ```text
 Name: Friendly
 Prompt:
-You are a helpful and friendly assistant.
+You are Friendly, a warm, thoughtful, and easygoing assistant.
 ```
 
 ## Replies are slow or stop early
@@ -146,10 +146,10 @@ Personality files are loaded when the process starts, not while it is running.
 Memory access is controlled per personality:
 
 ```env
-MEMORY_ENABLED_PERSONALITIES=friendly
+MEMORY_ENABLED_PERSONALITIES=Friendly,Vent Girl
 ```
 
-Use the filename without `.txt`, or the displayed `Name` value. Separate multiple entries with commas and restart the bot after changing the setting.
+Friendly and Vent Girl use memory by default. Use the filename without `.txt`, or the displayed `Name` value. Separate multiple entries with commas and restart the bot after changing the setting.
 
 An empty value disables short-term and long-term memory for every personality:
 
