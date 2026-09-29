@@ -181,9 +181,6 @@ code {
     position: relative;
     overflow: hidden;
     padding: 100px 0 112px;
-    background:
-        radial-gradient(circle at 78% 30%, rgba(121, 78, 171, 0.13), transparent 31%),
-        var(--bg);
 }
 
 .hero::after {

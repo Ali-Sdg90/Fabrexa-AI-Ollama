@@ -27,8 +27,8 @@ Telegram still carries messages between you and the bot. Model inference and Fab
 
 <table>
     <tr>
-        <td width="50%"><img src="./public/images/chating-w-bot.jpg" alt="Chatting with a local model through Fabrexa in Telegram" /></td>
-        <td width="50%"><img src="./public/images/change-personality.jpg" alt="Changing the active personality in Fabrexa" /></td>
+        <td width="50%"><img src="./public/images/chating-w-bot.png" alt="Chatting with a local model through Fabrexa in Telegram" /></td>
+        <td width="50%"><img src="./public/images/change-personality.png" alt="Changing the active personality in Fabrexa" /></td>
     </tr>
     <tr>
         <td align="center">Chat with the selected local model</td>
