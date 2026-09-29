@@ -1,6 +1,6 @@
-# Fabrexa AI
+# Fabrexa AI Ollama
 
-<img src="./public/images/project-logo.jpg" alt="Fabrexa AI logo" width="160" />
+<img src="./public/images/og-image.jpg" alt="Fabrexa AI Ollama" width="100%" />
 
 Fabrexa is a self-hosted Telegram bot for chatting with an LLM running through Ollama on your own computer.
 

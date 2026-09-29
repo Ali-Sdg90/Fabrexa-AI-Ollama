@@ -938,19 +938,32 @@ code {
         padding-top: 48px;
     }
 
+    .closing {
+        padding: 52px 0;
+    }
+
     .closing-inner {
-        grid-template-columns: 58px 1fr;
-        gap: 20px;
+        grid-template-columns: 1fr;
+        gap: 18px;
     }
 
     .closing img {
-        width: 58px;
-        height: 58px;
-        border-radius: 13px;
+        display: none;
+    }
+
+    .closing h2 {
+        font-size: clamp(1.7rem, 8vw, 2.15rem);
+    }
+
+    .closing p {
+        margin-top: 7px;
+        font-size: 0.92rem;
     }
 
     .closing .button {
-        grid-column: 1 / -1;
+        grid-column: 1;
+        min-height: 44px;
+        justify-self: start;
     }
 
     .footer-wrap {
@@ -988,6 +1001,14 @@ code {
 
     .model-option {
         padding: 18px;
+    }
+
+    .closing {
+        padding: 42px 0;
+    }
+
+    .closing-inner {
+        gap: 14px;
     }
 }
 
