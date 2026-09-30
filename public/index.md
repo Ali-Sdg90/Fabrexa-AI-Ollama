@@ -20,6 +20,7 @@ Telegram carries messages between the user and bot. Model inference, personality
 - Ollama
 - A Telegram bot token
 - A numeric Telegram user ID when private mode is enabled
+- A public Telegram username for private-mode access requests
 
 ## Basic setup
 
@@ -30,7 +31,7 @@ npm install
 ollama pull gemma3:12b
 ```
 
-Copy `.env.example` to `.env`, add the Telegram token and owner ID, then run. The included `Friendly` personality works without additional setup:
+Copy `.env.example` to `.env`, then add the Telegram token, numeric owner ID, and public owner username. In private mode, the username is shown to users who want to request access. The included `Friendly` personality works without additional setup:
 
 ```bash
 npm run check

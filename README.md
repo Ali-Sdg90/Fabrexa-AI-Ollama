@@ -59,6 +59,7 @@ Fabrexa sends the active personality prompt, up to eight recent conversation mes
 - [Ollama](https://ollama.com/)
 - A bot token created with [@BotFather](https://t.me/botfather)
 - Your numeric Telegram user ID when private mode is enabled
+- Your public Telegram username when private mode is enabled
 
 ## Installation
 
@@ -105,11 +106,14 @@ Set the required values in `.env`:
 ```env
 TELEGRAM_BOT_TOKEN=your_token_from_botfather
 OWNER_ID=your_numeric_telegram_id
+OWNER_USERNAME=your_telegram_username
 BOT_PRIVATE=true
 OLLAMA_MODEL=gemma3:12b
 ```
 
 Never commit `.env` or share your Telegram bot token.
+
+`OWNER_ID` controls who can use the private bot. `OWNER_USERNAME` is the public contact handle shown to other Telegram users, so enter it without spaces; the leading `@` is optional. When someone without access contacts the bot, Fabrexa explains that the instance is private, points them to this username to request access, and links to the GitHub project for self-hosting.
 
 The repository includes four ready-to-use demo personalities: Friendly, Elara Voss, Sherlock Holmes, and Vent Girl. Add more `.txt` files to `personalities/` if you want custom options in the Telegram personality picker.
 
@@ -159,6 +163,7 @@ Memory files are stored locally in `chat_memory/` and are ignored by Git.
 | --- | --- | --- |
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token | Required |
 | `OWNER_ID` | Allowed Telegram user in private mode | Required when private |
+| `OWNER_USERNAME` | Public contact shown to users denied access | Required when private |
 | `BOT_PRIVATE` | Restrict the bot to `OWNER_ID` | `true` |
 | `OLLAMA_BASE_URL` | Ollama server address | `http://127.0.0.1:11434` |
 | `OLLAMA_MODEL` | Model used for chat | `gemma3:12b` in `.env.example` |

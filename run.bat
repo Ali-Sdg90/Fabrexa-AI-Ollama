@@ -38,6 +38,7 @@ if not exist ".env" (
     echo Edit .env and set:
     echo    - TELEGRAM_BOT_TOKEN
     echo    - OWNER_ID
+    echo    - OWNER_USERNAME
     echo    - OLLAMA_MODEL
     echo.
     pause

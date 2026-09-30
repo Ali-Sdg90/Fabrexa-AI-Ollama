@@ -501,7 +501,8 @@ npm install</code></pre>
                             <p>
                                 Copy <code>.env.example</code> to
                                 <code>.env</code>, then add the token from
-                                BotFather and your numeric Telegram user ID.
+                                BotFather, your numeric Telegram user ID, and
+                                your public Telegram username.
                             </p>
                             <div class="code-block">
                                 <button
@@ -515,6 +516,7 @@ npm install</code></pre>
                                     id="environment-file"
                                 ><code>TELEGRAM_BOT_TOKEN=your_token_from_botfather
 OWNER_ID=your_numeric_telegram_id
+OWNER_USERNAME=your_telegram_username
 OLLAMA_MODEL=gemma3:12b
 BOT_PRIVATE=true</code></pre>
                             </div>
@@ -523,7 +525,10 @@ BOT_PRIVATE=true</code></pre>
                                 <code>gemma3:12b</code> with the exact
                                 <code>hf.co/...</code> model reference from the
                                 previous step. Never commit your token or
-                                <code>.env</code> file.
+                                <code>.env</code> file. In private mode,
+                                <code>OWNER_USERNAME</code> is shown to users
+                                who want to request access; the leading
+                                <code>@</code> is optional.
                             </p>
                         </li>
 

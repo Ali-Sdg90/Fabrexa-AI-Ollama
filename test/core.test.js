@@ -5,6 +5,7 @@ import path from "node:path";
 
 process.env.TELEGRAM_BOT_TOKEN = "test-token";
 process.env.OWNER_ID = "1001";
+process.env.OWNER_USERNAME = "fabrexa_owner";
 process.env.BOT_PRIVATE = "true";
 process.env.MEMORY_ENABLED_PERSONALITIES = "Friendly,Vent Girl";
 
@@ -20,6 +21,9 @@ const { registerMessageHandler } = await import(
 const { getMemoryService } = await import("../src/memory/memoryService.js");
 const { parseSessionHistory } = await import("../src/memory/index.js");
 const { hasMemoryAccess } = await import("../src/memory/access.js");
+const { PRIVATE_ACCESS_MESSAGE, replyNotOwner } = await import(
+    "../src/bot/middleware/ownerCheck.js"
+);
 
 function getMessageHandlers() {
     const handlers = [];
@@ -85,7 +89,7 @@ test("another group user cannot complete or cancel an owner's pending edit", asy
             getPendingMemoryEdit(chatId, ownerId),
             "memory-owner",
         );
-        assert.deepEqual(cancelContext.replies, ["you are not my owner :P"]);
+        assert.deepEqual(cancelContext.replies, [PRIVATE_ACCESS_MESSAGE]);
 
         const editContext = createContext(chatId, otherUserId, "Changed text");
         await dispatchMessage(editContext);
@@ -93,10 +97,42 @@ test("another group user cannot complete or cancel an owner's pending edit", asy
             getPendingMemoryEdit(chatId, ownerId),
             "memory-owner",
         );
-        assert.deepEqual(editContext.replies, ["you are not my owner :P"]);
+        assert.deepEqual(editContext.replies, [PRIVATE_ACCESS_MESSAGE]);
     } finally {
         deletePendingMemoryEdit(chatId, ownerId);
     }
+});
+
+test("private access replies explain how to contact the owner and self-host", async () => {
+    const ctx = createContext("private-chat", 2002, "/start");
+
+    await replyNotOwner(ctx);
+
+    assert.equal(ctx.replies.length, 1);
+    assert.match(ctx.replies[0], /private mode/i);
+    assert.match(ctx.replies[0], /@fabrexa_owner/);
+    assert.match(
+        ctx.replies[0],
+        /https:\/\/github\.com\/Ali-Sdg90\/Fabrexa-AI-Ollama/,
+    );
+});
+
+test("private access callbacks show an alert and send the full message", async () => {
+    const ctx = createContext("private-callback", 2002, "");
+    ctx.callbackAnswers = [];
+    ctx.answerCbQuery = async function (message, options) {
+        this.callbackAnswers.push({ message, options });
+    };
+
+    await replyNotOwner(ctx, true);
+
+    assert.deepEqual(ctx.callbackAnswers, [
+        {
+            message: "This bot is currently in private mode.",
+            options: { show_alert: true },
+        },
+    ]);
+    assert.deepEqual(ctx.replies, [PRIVATE_ACCESS_MESSAGE]);
 });
 
 test("the owner can complete a pending memory edit", async () => {

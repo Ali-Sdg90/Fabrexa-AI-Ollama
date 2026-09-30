@@ -103,9 +103,10 @@ The repository's [`.env.example`](../.env.example) is the source of truth for a 
 | --- | --- | --- | --- |
 | `TELEGRAM_BOT_TOKEN` | Yes | None | Token created with BotFather |
 | `OWNER_ID` | In private mode | None | Numeric Telegram user allowed to use the bot |
+| `OWNER_USERNAME` | In private mode | None | Public contact handle shown to users denied access |
 | `BOT_PRIVATE` | No | `true` | Restricts access to `OWNER_ID` |
 
-When `BOT_PRIVATE=false`, any Telegram user who can reach the bot can use it. Runtime data is still separated by Telegram chat ID.
+`OWNER_ID` is used for authorization and must be numeric. `OWNER_USERNAME` is displayed in the private-mode response so other users can request access; it may be entered with or without the leading `@`. When `BOT_PRIVATE=false`, any Telegram user who can reach the bot can use it, and neither owner value is required. Runtime data is still separated by Telegram chat ID.
 
 ### Ollama and generation
 
@@ -186,6 +187,7 @@ The site uses plain HTML, CSS, and JavaScript. It does not require a frontend bu
 
 - Keep `.env`, bot tokens, private personality prompts, and `chat_memory/` out of Git.
 - Keep private mode enabled unless public access is intentional.
+- Use a public contact username for `OWNER_USERNAME`; private-mode users will see it.
 - Treat detailed development logs as sensitive because they can contain conversation context.
 - Telegram transports the messages, even though model inference runs through the configured Ollama server.
 - Back up `chat_memory/` before moving or replacing an installation if its saved conversations matter.

@@ -32,7 +32,7 @@ On Windows Command Prompt:
 copy .env.example .env
 ```
 
-Then replace the placeholder token and owner ID.
+Then replace the placeholder token, owner ID, and owner username.
 
 ## `TELEGRAM_BOT_TOKEN is not set`
 
@@ -56,6 +56,17 @@ OWNER_ID=123456789
 ```
 
 Do not use a Telegram username. If you intentionally want a shared bot, set `BOT_PRIVATE=false`; understand that anyone who can reach the bot can then use your local model.
+
+## `OWNER_USERNAME must be a valid Telegram username`
+
+Private mode also requires the public Telegram username that should receive access requests:
+
+```env
+BOT_PRIVATE=true
+OWNER_USERNAME=your_telegram_username
+```
+
+This is separate from `OWNER_ID`: the numeric ID authorizes access, while the username is shown to users who cannot access the private instance. You may include or omit the leading `@`. Use 5 to 32 letters, numbers, or underscores, and restart the bot after changing `.env`.
 
 ## Ollama is not reachable
 

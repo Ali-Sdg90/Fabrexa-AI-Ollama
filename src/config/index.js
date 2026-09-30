@@ -37,6 +37,14 @@ if (BOT_PRIVATE && !Number.isInteger(OWNER_ID)) {
         "OWNER_ID must be a numeric Telegram user id when BOT_PRIVATE is true.",
     );
 }
+export const OWNER_USERNAME = (process.env.OWNER_USERNAME || "")
+    .trim()
+    .replace(/^@/, "");
+if (BOT_PRIVATE && !/^[A-Za-z0-9_]{5,32}$/.test(OWNER_USERNAME)) {
+    throw new Error(
+        "OWNER_USERNAME must be a valid Telegram username when BOT_PRIVATE is true.",
+    );
+}
 
 // Ollama configuration
 export const OLLAMA_BASE_URL = trimTrailingSlash(

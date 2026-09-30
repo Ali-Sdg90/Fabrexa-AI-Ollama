@@ -62,6 +62,19 @@ addCheck(
           ? "missing or not numeric"
           : "not required in public mode",
 );
+const ownerUsername = (process.env.OWNER_USERNAME || "")
+    .trim()
+    .replace(/^@/, "");
+const ownerUsernameValid = /^[A-Za-z0-9_]{5,32}$/.test(ownerUsername);
+addCheck(
+    "OWNER_USERNAME",
+    !botPrivate || ownerUsernameValid,
+    ownerUsernameValid
+        ? `@${ownerUsername}`
+        : botPrivate
+          ? "missing or invalid"
+          : "not required in public mode",
+);
 addCheck("Bot access", true, botPrivate ? "private" : "public");
 
 const model =
