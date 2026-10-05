@@ -8,6 +8,10 @@ process.env.OWNER_ID = "1001";
 process.env.OWNER_USERNAME = "fabrexa_owner";
 process.env.BOT_PRIVATE = "true";
 process.env.MEMORY_ENABLED_PERSONALITIES = "Friendly,Vent Girl";
+process.env.OLLAMA_NUM_CTX = "8192";
+process.env.OLLAMA_MAX_TOKENS = "512";
+process.env.CHAT_HISTORY_MAX_MESSAGES = "24";
+process.env.CHAT_HISTORY_MAX_TOKENS = "4096";
 
 const { PERSONALITIES } = await import("../src/personalities/index.js");
 const {
@@ -20,6 +24,8 @@ const { registerMessageHandler } = await import(
 );
 const { getMemoryService } = await import("../src/memory/memoryService.js");
 const { parseSessionHistory } = await import("../src/memory/index.js");
+const { default: AIClient, estimateTokenCount, selectRecentHistory } =
+    await import("../src/ai/client.js");
 const { hasMemoryAccess } = await import("../src/memory/access.js");
 const { PRIVATE_ACCESS_MESSAGE, replyNotOwner } = await import(
     "../src/bot/middleware/ownerCheck.js"
@@ -188,4 +194,81 @@ test("a multiline assistant message keeps the assistant role", () => {
         role: "assistant",
         content: "First line\nSecond line",
     });
+});
+
+test("session history limits parsed messages instead of physical lines", () => {
+    const history = parseSessionHistory(
+        [
+            "[2026-01-01 10:00:00.000] User: Old question",
+            "Old question continuation",
+            "[2026-01-01 10:00:01.000] Friendly: Old answer",
+            "Old answer continuation",
+            "[2026-01-01 10:00:02.000] User: Latest question",
+        ].join("\n"),
+        2,
+    );
+
+    assert.deepEqual(history, [
+        {
+            role: "assistant",
+            content: "Old answer\nOld answer continuation",
+        },
+        { role: "user", content: "Latest question" },
+    ]);
+});
+
+test("the Ollama prompt keeps up to 24 previous messages", () => {
+    const client = new AIClient();
+    const history = Array.from({ length: 30 }, (_, index) => ({
+        role: index % 2 === 0 ? "user" : "assistant",
+        content: `history-${index}`,
+    }));
+
+    const messages = client.buildMessages(
+        "latest message",
+        { prompt: "Keep replies concise." },
+        history,
+        "",
+    );
+    const includedHistory = messages.slice(1, -1);
+
+    assert.equal(includedHistory.length, 24);
+    assert.equal(includedHistory[0].content, "history-6");
+    assert.equal(includedHistory.at(-1).content, "history-29");
+});
+
+test("history trimming keeps the newest complete exchange within its token budget", () => {
+    const history = [
+        { role: "user", content: "older question" },
+        { role: "assistant", content: "older answer" },
+        { role: "user", content: "newer question" },
+        { role: "assistant", content: "newer answer" },
+    ];
+    const newestExchangeBudget =
+        estimateTokenCount("newer question") +
+        estimateTokenCount("newer answer") +
+        8;
+
+    assert.deepEqual(
+        selectRecentHistory(history, 24, newestExchangeBudget),
+        history.slice(-2),
+    );
+});
+
+test("fixed prompt content can reduce history to protect the context window", () => {
+    const client = new AIClient();
+    const messages = client.buildMessages(
+        "latest message",
+        { prompt: "پ".repeat(8000) },
+        [
+            { role: "user", content: "previous question" },
+            { role: "assistant", content: "previous answer" },
+        ],
+        "",
+    );
+
+    assert.deepEqual(
+        messages.map((message) => message.role),
+        ["system", "user"],
+    );
 });

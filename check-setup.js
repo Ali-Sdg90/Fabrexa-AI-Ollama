@@ -96,6 +96,21 @@ addCheck(
     `${streamEditInterval || "invalid"}ms`,
 );
 
+const historyMaxMessages = Number(
+    process.env.CHAT_HISTORY_MAX_MESSAGES || 24,
+);
+const historyMaxTokens = Number(process.env.CHAT_HISTORY_MAX_TOKENS || 4096);
+addCheck(
+    "Conversation history message limit",
+    Number.isInteger(historyMaxMessages) && historyMaxMessages > 0,
+    `${historyMaxMessages || "invalid"} messages`,
+);
+addCheck(
+    "Conversation history token budget",
+    Number.isInteger(historyMaxTokens) && historyMaxTokens > 0,
+    `${historyMaxTokens || "invalid"} approximate tokens`,
+);
+
 const memoryProcessorCron = process.env.MEMORY_PROCESSOR_CRON || "0 0 * * *";
 const memoryProcessorTimezone =
     process.env.MEMORY_PROCESSOR_TIMEZONE || "Asia/Tehran";

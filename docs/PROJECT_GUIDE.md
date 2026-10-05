@@ -24,7 +24,7 @@ For each normal text message, the bot:
 
 1. Checks access when private mode is enabled.
 2. Loads the active personality and conversation session.
-3. Loads up to eight recent messages from the active session.
+3. Loads up to 24 recent messages from the active session, then trims the oldest messages when the history token budget or context window requires it.
 4. Adds long-term memory when the selected personality is allowed to use it.
 5. Sends the request to Ollama with streaming enabled.
 6. Updates the Telegram response while the model is generating it.
@@ -73,7 +73,7 @@ Fabrexa stores runtime data under `chat_memory/<chat-id>/`.
 
 ### Recent conversation
 
-Recent messages from the active session provide normal conversational context. Starting a new chat creates a new session, so earlier session messages are no longer included.
+Recent messages from the active session provide normal conversational context. By default, Fabrexa considers up to 24 previous messages with an approximate 4096-token history budget. It also reserves room for the system and personality prompt, long-term memory, the latest user message, the configured maximum response, and a small safety margin. If everything does not fit, the oldest history messages are removed first. Starting a new chat creates a new session, so earlier session messages are no longer included.
 
 ### Short-term memory
 
@@ -120,6 +120,8 @@ The repository's [`.env.example`](../.env.example) is the source of truth for a 
 | `OLLAMA_TEMPERATURE` | `0.8` | Sampling temperature |
 | `OLLAMA_TOP_P` | `0.9` | Nucleus sampling value |
 | `OLLAMA_MAX_TOKENS` | `512` | Maximum generated tokens per response |
+| `CHAT_HISTORY_MAX_MESSAGES` | `24` | Maximum previous conversation messages considered per response |
+| `CHAT_HISTORY_MAX_TOKENS` | `4096` | Approximate token budget for previous conversation messages |
 | `PERSONALITY_INSTRUCTION` | Built-in instruction | Prefix added before the selected personality prompt |
 | `REQUEST_TIMEOUT` | `120000` | Ollama request timeout in milliseconds |
 

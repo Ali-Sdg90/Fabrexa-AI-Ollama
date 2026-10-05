@@ -13,10 +13,15 @@ import {
     OLLAMA_TEMPERATURE,
     OLLAMA_TOP_P,
     OLLAMA_MAX_TOKENS,
+    CHAT_HISTORY_MAX_MESSAGES,
+    CHAT_HISTORY_MAX_TOKENS,
     SYSTEM_MESSAGE,
     PERSONALITY_INSTRUCTION,
 } from "./config.js";
 import { REQUEST_TIMEOUT } from "../config/index.js";
+
+const MESSAGE_TOKEN_OVERHEAD = 4;
+const CONTEXT_SAFETY_TOKENS = 256;
 
 function logDev(label, value) {
     if (!IS_DEV_LOG_MODE) return;
@@ -30,6 +35,67 @@ function logDev(label, value) {
 
 function getResponseChunk(data) {
     return data?.message?.content || data?.response || "";
+}
+
+export function estimateTokenCount(value) {
+    const text = String(value || "");
+    let asciiCharacters = 0;
+    let nonAsciiCharacters = 0;
+
+    for (const character of text) {
+        if (character.codePointAt(0) <= 0x7f) {
+            asciiCharacters += 1;
+        } else {
+            nonAsciiCharacters += 1;
+        }
+    }
+
+    return Math.ceil(asciiCharacters / 4 + nonAsciiCharacters);
+}
+
+function estimateMessageTokens(message) {
+    return estimateTokenCount(message?.content) + MESSAGE_TOKEN_OVERHEAD;
+}
+
+export function selectRecentHistory(
+    historyMessages,
+    maxMessages = CHAT_HISTORY_MAX_MESSAGES,
+    tokenBudget = CHAT_HISTORY_MAX_TOKENS,
+) {
+    if (!Array.isArray(historyMessages) || maxMessages <= 0 || tokenBudget <= 0) {
+        return [];
+    }
+
+    const validHistory = historyMessages
+        .filter(
+            (message) =>
+                ["user", "assistant"].includes(message?.role) &&
+                typeof message.content === "string" &&
+                message.content.trim(),
+        )
+        .slice(-Math.floor(maxMessages));
+
+    const selected = [];
+    let usedTokens = 0;
+
+    for (let index = validHistory.length - 1; index >= 0; index -= 1) {
+        const message = validHistory[index];
+        const messageTokens = estimateMessageTokens(message);
+        if (usedTokens + messageTokens > tokenBudget) break;
+
+        selected.unshift({
+            role: message.role,
+            content: message.content,
+        });
+        usedTokens += messageTokens;
+    }
+
+    // Avoid beginning the supplied context with a detached assistant reply.
+    while (selected[0]?.role === "assistant") {
+        selected.shift();
+    }
+
+    return selected;
 }
 
 class AIClient {
@@ -58,9 +124,23 @@ ${memoryContext}`
             },
         ];
 
-        const recentHistory = Array.isArray(historyMessages)
-            ? historyMessages.slice(-8)
-            : [];
+        const fixedTokenEstimate =
+            estimateMessageTokens({ content: systemContent }) +
+            estimateMessageTokens({ content: userMessage }) +
+            OLLAMA_MAX_TOKENS +
+            CONTEXT_SAFETY_TOKENS;
+        const availableHistoryTokens = Math.max(
+            0,
+            Math.min(
+                CHAT_HISTORY_MAX_TOKENS,
+                OLLAMA_NUM_CTX - fixedTokenEstimate,
+            ),
+        );
+        const recentHistory = selectRecentHistory(
+            historyMessages,
+            CHAT_HISTORY_MAX_MESSAGES,
+            availableHistoryTokens,
+        );
         for (const msg of recentHistory) {
             if (msg.role && msg.content) {
                 messages.push({

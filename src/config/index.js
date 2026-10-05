@@ -63,6 +63,12 @@ export const OLLAMA_NUM_CTX = readNumber("OLLAMA_NUM_CTX", 8192);
 export const OLLAMA_TEMPERATURE = readNumber("OLLAMA_TEMPERATURE", 0.8);
 export const OLLAMA_TOP_P = readNumber("OLLAMA_TOP_P", 0.9);
 export const OLLAMA_MAX_TOKENS = readNumber("OLLAMA_MAX_TOKENS", 512);
+export const CHAT_HISTORY_MAX_MESSAGES = Math.floor(
+    readNumber("CHAT_HISTORY_MAX_MESSAGES", 24),
+);
+export const CHAT_HISTORY_MAX_TOKENS = Math.floor(
+    readNumber("CHAT_HISTORY_MAX_TOKENS", 4096),
+);
 
 // Logging configuration
 export const LOG_LEVEL = process.env.LOG_LEVEL || "INFO";

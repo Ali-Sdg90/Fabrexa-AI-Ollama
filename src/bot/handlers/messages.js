@@ -166,10 +166,7 @@ export function registerMessageHandler(bot) {
                 PERSONALITIES[Object.keys(PERSONALITIES)[0]];
             const memoryAccess = hasMemoryAccess(personality);
 
-            const recentAll = await loadRecentConversation(ctx.chat.id, 50);
-            const recentHistory = Array.isArray(recentAll)
-                ? recentAll.slice(-8)
-                : [];
+            const recentHistory = await loadRecentConversation(ctx.chat.id);
 
             const memoryContext = memoryAccess
                 ? await getLongTermMemoryForPrompt(ctx.chat.id, 30)

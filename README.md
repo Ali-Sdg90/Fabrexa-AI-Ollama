@@ -51,7 +51,7 @@ Ollama on your computer
 Streamed reply in Telegram
 ```
 
-Fabrexa sends the active personality prompt, up to eight recent conversation messages, optional long-term memory, and the new message to Ollama. The response is then streamed back to Telegram.
+Fabrexa sends the active personality prompt, up to 24 recent conversation messages, optional long-term memory, and the new message to Ollama. Recent history has an approximate 4096-token budget and is shortened from the oldest message when needed so the prompt and reply still fit the configured context window. The response is then streamed back to Telegram.
 
 ## Requirements
 
@@ -170,6 +170,8 @@ Memory files are stored locally in `chat_memory/` and are ignored by Git.
 | `OLLAMA_ANALYZER_MODEL` | Optional model used for memory analysis | Main chat model |
 | `OLLAMA_NUM_CTX` | Context window | `8192` |
 | `OLLAMA_MAX_TOKENS` | Maximum generated tokens | `512` |
+| `CHAT_HISTORY_MAX_MESSAGES` | Maximum previous messages considered per reply | `24` |
+| `CHAT_HISTORY_MAX_TOKENS` | Approximate token budget for previous messages | `4096` |
 | `MEMORY_ENABLED_PERSONALITIES` | Personalities allowed to use memory | `Friendly,Vent Girl` |
 | `LOG_MODE` | Enables detailed payload logs when set to `dev-mode` | `normal` |
 

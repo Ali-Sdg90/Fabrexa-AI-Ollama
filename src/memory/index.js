@@ -8,7 +8,11 @@ import fs from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { CHAT_MEMORY_DIR, DEFAULT_PERSONALITY } from "../config/index.js";
+import {
+    CHAT_HISTORY_MAX_MESSAGES,
+    CHAT_MEMORY_DIR,
+    DEFAULT_PERSONALITY,
+} from "../config/index.js";
 import { analyzeMessageImportance } from "./analyzer.js";
 import { getMemoryService } from "./memoryService.js";
 
@@ -133,7 +137,10 @@ function normalizeConversation(entries) {
     return normalized;
 }
 
-export async function loadRecentConversation(chatId, maxLines = 12) {
+export async function loadRecentConversation(
+    chatId,
+    maxMessages = CHAT_HISTORY_MAX_MESSAGES,
+) {
     const meta = await loadMeta(chatId);
     const sessionPath = getSessionPath(chatId, meta.currentSession);
     if (!existsSync(sessionPath)) {
@@ -141,18 +148,20 @@ export async function loadRecentConversation(chatId, maxLines = 12) {
     }
 
     const raw = await fs.readFile(sessionPath, "utf-8");
-    return parseSessionHistory(raw, maxLines);
+    return parseSessionHistory(raw, maxMessages);
 }
 
-export function parseSessionHistory(raw, maxLines = 12) {
+export function parseSessionHistory(
+    raw,
+    maxMessages = CHAT_HISTORY_MAX_MESSAGES,
+) {
     const lines = raw
         .split(/\r?\n/)
         .map((line) => line.trim())
         .filter(Boolean);
-    const recent = lines.slice(-maxLines);
     const parsed = [];
 
-    for (const line of recent) {
+    for (const line of lines) {
         const messageMatch = line.match(/^\[[^\]]+\]\s+([^:]+):\s?(.*)$/);
         if (messageMatch) {
             parsed.push({
@@ -167,7 +176,9 @@ export function parseSessionHistory(raw, maxLines = 12) {
         }
     }
 
-    return normalizeConversation(parsed);
+    const normalized = normalizeConversation(parsed);
+    const limit = Math.max(0, Math.floor(maxMessages));
+    return limit === 0 ? [] : normalized.slice(-limit);
 }
 
 export async function ensureMemoryDirectory() {
