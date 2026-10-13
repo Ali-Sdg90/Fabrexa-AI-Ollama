@@ -12,6 +12,11 @@ function readNumber(name, fallback) {
     return Number.isFinite(value) && value > 0 ? value : fallback;
 }
 
+function readNonNegativeInteger(name, fallback) {
+    const value = Number(process.env[name]);
+    return Number.isInteger(value) && value >= 0 ? value : fallback;
+}
+
 function readBoolean(name, fallback) {
     const value = process.env[name]?.trim().toLowerCase();
     if (!value) return fallback;
@@ -62,7 +67,15 @@ export const OLLAMA_KEEP_ALIVE = process.env.OLLAMA_KEEP_ALIVE?.trim() || "10m";
 export const OLLAMA_NUM_CTX = readNumber("OLLAMA_NUM_CTX", 8192);
 export const OLLAMA_TEMPERATURE = readNumber("OLLAMA_TEMPERATURE", 0.8);
 export const OLLAMA_TOP_P = readNumber("OLLAMA_TOP_P", 0.9);
-export const OLLAMA_MAX_TOKENS = readNumber("OLLAMA_MAX_TOKENS", 512);
+export const OLLAMA_MAX_TOKENS = readNumber("OLLAMA_MAX_TOKENS", 2048);
+export const OLLAMA_MIN_RESPONSE_WORDS = readNonNegativeInteger(
+    "OLLAMA_MIN_RESPONSE_WORDS",
+    250,
+);
+export const OLLAMA_MAX_CONTINUATIONS = readNonNegativeInteger(
+    "OLLAMA_MAX_CONTINUATIONS",
+    2,
+);
 export const CHAT_HISTORY_MAX_MESSAGES = Math.floor(
     readNumber("CHAT_HISTORY_MAX_MESSAGES", 24),
 );
@@ -109,4 +122,4 @@ export const MEMORY_PROCESSOR_TIMEZONE =
 
 export const PERSONALITY_INSTRUCTION =
     process.env.PERSONALITY_INSTRUCTION?.trim() ||
-    "Your system message is not set. just response 'YOUR SYSTEM MESSAGE IS NOT SET' to every user message.";
+    "Follow the selected personality and always respond with a substantial, fully developed answer.";

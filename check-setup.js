@@ -100,6 +100,24 @@ const historyMaxMessages = Number(
     process.env.CHAT_HISTORY_MAX_MESSAGES || 24,
 );
 const historyMaxTokens = Number(process.env.CHAT_HISTORY_MAX_TOKENS || 4096);
+const minResponseWords = Number(
+    process.env.OLLAMA_MIN_RESPONSE_WORDS ?? 250,
+);
+const maxContinuations = Number(
+    process.env.OLLAMA_MAX_CONTINUATIONS ?? 2,
+);
+addCheck(
+    "Minimum response length",
+    Number.isInteger(minResponseWords) && minResponseWords >= 0,
+    minResponseWords === 0
+        ? "disabled"
+        : `${minResponseWords || "invalid"} words`,
+);
+addCheck(
+    "Automatic response continuations",
+    Number.isInteger(maxContinuations) && maxContinuations >= 0,
+    `${Number.isFinite(maxContinuations) ? maxContinuations : "invalid"} maximum`,
+);
 addCheck(
     "Conversation history message limit",
     Number.isInteger(historyMaxMessages) && historyMaxMessages > 0,

@@ -13,6 +13,8 @@ import {
     OLLAMA_TEMPERATURE,
     OLLAMA_TOP_P,
     OLLAMA_MAX_TOKENS,
+    OLLAMA_MIN_RESPONSE_WORDS,
+    OLLAMA_MAX_CONTINUATIONS,
     CHAT_HISTORY_MAX_MESSAGES,
     CHAT_HISTORY_MAX_TOKENS,
     SYSTEM_MESSAGE,
@@ -35,6 +37,41 @@ function logDev(label, value) {
 
 function getResponseChunk(data) {
     return data?.message?.content || data?.response || "";
+}
+
+export function countResponseWords(value) {
+    const text = String(value || "").trim();
+    return text ? text.split(/\s+/u).length : 0;
+}
+
+function appendResponse(current, next) {
+    const addition = String(next || "").trim();
+    if (!addition) return current;
+    return current.trim() ? `${current.trimEnd()}\n\n${addition}` : addition;
+}
+
+function buildContinuationMessages(baseMessages, response) {
+    const remainingWords = Math.max(
+        1,
+        OLLAMA_MIN_RESPONSE_WORDS - countResponseWords(response),
+    );
+
+    return [
+        ...baseMessages,
+        { role: "assistant", content: response },
+        {
+            role: "user",
+            content: `Continue the same response directly from where it ended. Add at least ${remainingWords} more words so the combined response reaches the required length. Do not restart, repeat, summarize, or mention this instruction. Return only the continuation.`,
+        },
+    ];
+}
+
+function shouldContinueResponse(response, continuationCount) {
+    return (
+        OLLAMA_MIN_RESPONSE_WORDS > 0 &&
+        countResponseWords(response) < OLLAMA_MIN_RESPONSE_WORDS &&
+        continuationCount < OLLAMA_MAX_CONTINUATIONS
+    );
 }
 
 export function estimateTokenCount(value) {
@@ -107,8 +144,8 @@ class AIClient {
 
     buildMessages(userMessage, personality, historyMessages, memoryContext) {
         const personalityPrompt = personality?.prompt
-            ? `${PERSONALITY_INSTRUCTION}\n${personality.prompt}`
-            : `${PERSONALITY_INSTRUCTION}\n${this.systemMessage}`;
+            ? `${personality.prompt}\n\n${PERSONALITY_INSTRUCTION}`
+            : `${this.systemMessage}\n\n${PERSONALITY_INSTRUCTION}`;
 
         const systemContent = memoryContext
             ? `${personalityPrompt}
@@ -200,17 +237,45 @@ ${memoryContext}`
                 false,
             );
 
-            logDev("Ollama chat request", {
-                url: this.apiUrl,
-                timeout: REQUEST_TIMEOUT,
-                payload,
-            });
+            const baseMessages = payload.messages;
+            let requestMessages = baseMessages;
+            let messageContent = "";
+            let finalData = null;
+            let continuationCount = 0;
 
-            const response = await axios.post(this.apiUrl, payload, {
-                timeout: REQUEST_TIMEOUT,
-            });
+            while (true) {
+                const requestPayload = {
+                    ...payload,
+                    messages: requestMessages,
+                };
+                logDev("Ollama chat request", {
+                    url: this.apiUrl,
+                    timeout: REQUEST_TIMEOUT,
+                    continuationCount,
+                    payload: requestPayload,
+                });
 
-            const messageContent = getResponseChunk(response.data);
+                const response = await axios.post(
+                    this.apiUrl,
+                    requestPayload,
+                    { timeout: REQUEST_TIMEOUT },
+                );
+                const responseChunk = getResponseChunk(response.data);
+                finalData = response.data;
+
+                if (!responseChunk.trim()) break;
+                messageContent = appendResponse(messageContent, responseChunk);
+
+                if (!shouldContinueResponse(messageContent, continuationCount)) {
+                    break;
+                }
+
+                continuationCount += 1;
+                requestMessages = buildContinuationMessages(
+                    baseMessages,
+                    messageContent,
+                );
+            }
 
             if (!messageContent.trim()) {
                 console.warn("⚠️ Ollama returned an empty response.");
@@ -221,14 +286,15 @@ ${memoryContext}`
                 `✅ Ollama response received from ${this.model} (${messageContent.length} chars, ${Date.now() - startedAt}ms)`,
             );
             logDev("Ollama chat response", {
-                status: response.status,
-                model: response.data?.model,
-                done: response.data?.done,
-                totalDuration: response.data?.total_duration,
-                loadDuration: response.data?.load_duration,
-                promptEvalCount: response.data?.prompt_eval_count,
-                evalCount: response.data?.eval_count,
-                evalDuration: response.data?.eval_duration,
+                model: finalData?.model,
+                done: finalData?.done,
+                continuationCount,
+                responseWords: countResponseWords(messageContent),
+                totalDuration: finalData?.total_duration,
+                loadDuration: finalData?.load_duration,
+                promptEvalCount: finalData?.prompt_eval_count,
+                evalCount: finalData?.eval_count,
+                evalDuration: finalData?.eval_duration,
             });
             return messageContent;
         } catch (error) {
@@ -252,58 +318,81 @@ ${memoryContext}`
             memoryContext,
             true,
         );
+        const baseMessages = payload.messages;
+        let requestMessages = baseMessages;
         let fullContent = "";
         let finalMetadata = null;
+        let continuationCount = 0;
 
         try {
-            logDev("Ollama streaming chat request", {
-                url: this.apiUrl,
-                timeout: REQUEST_TIMEOUT,
-                payload,
-            });
+            while (true) {
+                const requestPayload = {
+                    ...payload,
+                    messages: requestMessages,
+                };
+                logDev("Ollama streaming chat request", {
+                    url: this.apiUrl,
+                    timeout: REQUEST_TIMEOUT,
+                    continuationCount,
+                    payload: requestPayload,
+                });
 
-            const response = await axios.post(this.apiUrl, payload, {
-                timeout: REQUEST_TIMEOUT,
-                responseType: "stream",
-            });
+                const response = await axios.post(this.apiUrl, requestPayload, {
+                    timeout: REQUEST_TIMEOUT,
+                    responseType: "stream",
+                });
 
-            let buffer = "";
+                let buffer = "";
+                let receivedContent = false;
+                let needsSeparator = Boolean(fullContent.trim());
 
-            for await (const chunk of response.data) {
-                buffer += chunk.toString("utf8");
-                const lines = buffer.split(/\r?\n/);
-                buffer = lines.pop() || "";
+                const appendChunk = async (contentChunk, data) => {
+                    if (!contentChunk) return;
+                    if (needsSeparator) {
+                        fullContent = `${fullContent.trimEnd()}\n\n`;
+                        needsSeparator = false;
+                    }
+                    fullContent += contentChunk;
+                    receivedContent = true;
+                    if (typeof onProgress === "function") {
+                        await onProgress(fullContent, data);
+                    }
+                };
 
-                for (const line of lines) {
-                    if (!line.trim()) continue;
-                    const data = JSON.parse(line);
-                    const contentChunk = getResponseChunk(data);
+                for await (const chunk of response.data) {
+                    buffer += chunk.toString("utf8");
+                    const lines = buffer.split(/\r?\n/);
+                    buffer = lines.pop() || "";
 
-                    if (contentChunk) {
-                        fullContent += contentChunk;
-                        if (typeof onProgress === "function") {
-                            await onProgress(fullContent, data);
+                    for (const line of lines) {
+                        if (!line.trim()) continue;
+                        const data = JSON.parse(line);
+                        await appendChunk(getResponseChunk(data), data);
+
+                        if (data.done) {
+                            finalMetadata = data;
                         }
                     }
+                }
 
+                if (buffer.trim()) {
+                    const data = JSON.parse(buffer);
+                    await appendChunk(getResponseChunk(data), data);
                     if (data.done) {
                         finalMetadata = data;
                     }
                 }
-            }
 
-            if (buffer.trim()) {
-                const data = JSON.parse(buffer);
-                const contentChunk = getResponseChunk(data);
-                if (contentChunk) {
-                    fullContent += contentChunk;
-                    if (typeof onProgress === "function") {
-                        await onProgress(fullContent, data);
-                    }
+                if (!receivedContent) break;
+                if (!shouldContinueResponse(fullContent, continuationCount)) {
+                    break;
                 }
-                if (data.done) {
-                    finalMetadata = data;
-                }
+
+                continuationCount += 1;
+                requestMessages = buildContinuationMessages(
+                    baseMessages,
+                    fullContent,
+                );
             }
 
             if (!fullContent.trim()) {
@@ -318,6 +407,8 @@ ${memoryContext}`
                 elapsedMs: Date.now() - startedAt,
                 model: finalMetadata?.model,
                 done: finalMetadata?.done,
+                continuationCount,
+                responseWords: countResponseWords(fullContent),
                 totalDuration: finalMetadata?.total_duration,
                 loadDuration: finalMetadata?.load_duration,
                 promptEvalCount: finalMetadata?.prompt_eval_count,

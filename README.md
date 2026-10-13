@@ -169,7 +169,9 @@ Memory files are stored locally in `chat_memory/` and are ignored by Git.
 | `OLLAMA_MODEL` | Model used for chat | `gemma3:12b` in `.env.example` |
 | `OLLAMA_ANALYZER_MODEL` | Optional model used for memory analysis | Main chat model |
 | `OLLAMA_NUM_CTX` | Context window | `8192` |
-| `OLLAMA_MAX_TOKENS` | Maximum generated tokens | `512` |
+| `OLLAMA_MAX_TOKENS` | Maximum generated tokens | `2048` |
+| `OLLAMA_MIN_RESPONSE_WORDS` | Minimum combined response length; `0` disables continuation | `250` |
+| `OLLAMA_MAX_CONTINUATIONS` | Maximum extra requests for a short response | `2` |
 | `CHAT_HISTORY_MAX_MESSAGES` | Maximum previous messages considered per reply | `24` |
 | `CHAT_HISTORY_MAX_TOKENS` | Approximate token budget for previous messages | `4096` |
 | `MEMORY_ENABLED_PERSONALITIES` | Personalities allowed to use memory | `Friendly,Vent Girl` |

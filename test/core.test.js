@@ -10,8 +10,12 @@ process.env.BOT_PRIVATE = "true";
 process.env.MEMORY_ENABLED_PERSONALITIES = "Friendly,Vent Girl";
 process.env.OLLAMA_NUM_CTX = "8192";
 process.env.OLLAMA_MAX_TOKENS = "512";
+process.env.OLLAMA_MIN_RESPONSE_WORDS = "250";
+process.env.OLLAMA_MAX_CONTINUATIONS = "2";
 process.env.CHAT_HISTORY_MAX_MESSAGES = "24";
 process.env.CHAT_HISTORY_MAX_TOKENS = "4096";
+process.env.PERSONALITY_INSTRUCTION =
+    "Write substantial, fully developed responses.";
 
 const { PERSONALITIES } = await import("../src/personalities/index.js");
 const {
@@ -24,8 +28,12 @@ const { registerMessageHandler } = await import(
 );
 const { getMemoryService } = await import("../src/memory/memoryService.js");
 const { parseSessionHistory } = await import("../src/memory/index.js");
-const { default: AIClient, estimateTokenCount, selectRecentHistory } =
-    await import("../src/ai/client.js");
+const {
+    default: AIClient,
+    countResponseWords,
+    estimateTokenCount,
+    selectRecentHistory,
+} = await import("../src/ai/client.js");
 const { hasMemoryAccess } = await import("../src/memory/access.js");
 const { PRIVATE_ACCESS_MESSAGE, replyNotOwner } = await import(
     "../src/bot/middleware/ownerCheck.js"
@@ -235,6 +243,27 @@ test("the Ollama prompt keeps up to 24 previous messages", () => {
     assert.equal(includedHistory.length, 24);
     assert.equal(includedHistory[0].content, "history-6");
     assert.equal(includedHistory.at(-1).content, "history-29");
+});
+
+test("the shared response instruction follows the personality prompt", () => {
+    const client = new AIClient();
+    const [systemMessage] = client.buildMessages(
+        "latest message",
+        { prompt: "Keep replies concise." },
+        [],
+        "",
+    );
+
+    assert.equal(systemMessage.role, "system");
+    assert.equal(
+        systemMessage.content,
+        "Keep replies concise.\n\nWrite substantial, fully developed responses.",
+    );
+});
+
+test("response word counting supports multiline text", () => {
+    assert.equal(countResponseWords("one  two\nthree\n\nfour"), 4);
+    assert.equal(countResponseWords("   "), 0);
 });
 
 test("history trimming keeps the newest complete exchange within its token budget", () => {

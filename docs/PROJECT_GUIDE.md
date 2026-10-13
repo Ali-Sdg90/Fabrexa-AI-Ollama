@@ -119,10 +119,12 @@ The repository's [`.env.example`](../.env.example) is the source of truth for a 
 | `OLLAMA_NUM_CTX` | `8192` | Context window size |
 | `OLLAMA_TEMPERATURE` | `0.8` | Sampling temperature |
 | `OLLAMA_TOP_P` | `0.9` | Nucleus sampling value |
-| `OLLAMA_MAX_TOKENS` | `512` | Maximum generated tokens per response |
+| `OLLAMA_MAX_TOKENS` | `2048` | Maximum generated tokens per response |
+| `OLLAMA_MIN_RESPONSE_WORDS` | `250` | Minimum combined response length; `0` disables automatic continuation |
+| `OLLAMA_MAX_CONTINUATIONS` | `2` | Maximum extra Ollama requests for a response below the minimum |
 | `CHAT_HISTORY_MAX_MESSAGES` | `24` | Maximum previous conversation messages considered per response |
 | `CHAT_HISTORY_MAX_TOKENS` | `4096` | Approximate token budget for previous conversation messages |
-| `PERSONALITY_INSTRUCTION` | Built-in instruction | Prefix added before the selected personality prompt |
+| `PERSONALITY_INSTRUCTION` | Built-in instruction | Final shared instruction added after the selected personality prompt |
 | `REQUEST_TIMEOUT` | `120000` | Ollama request timeout in milliseconds |
 
 `.env.example` selects `gemma3:12b`, so a normal installation uses that model unless you change it.
