@@ -207,6 +207,7 @@ personalities/       # Local personality prompts
 chat_memory/         # Local runtime data, created automatically
 public/              # Static project website
 docs/                # Focused technical and troubleshooting guides
+scripts/             # Maintenance tools and optional Windows autostart helper
 ```
 
 ## Project website
@@ -225,6 +226,7 @@ Then open `http://localhost:8000`.
 
 - [Project guide](./docs/PROJECT_GUIDE.md) for architecture, configuration, and implementation details
 - [Troubleshooting](./docs/TROUBLESHOOTING.md) for common setup and runtime problems
+- [Windows autostart helper](./scripts/windows-autostart/README.md) for starting Nekoray, Ollama, and Fabrexa after sign-in
 - [Contributing](./CONTRIBUTING.md) for the development workflow
 
 ## Author
